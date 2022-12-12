@@ -622,9 +622,13 @@ fn counter_agg_extrapolated_delta<'a>(summary: CounterSummary<'a>, method: &str)
 // Public facing interpolated_delta
 extension_sql!(
     "\n\
-CREATE FUNCTION toolkit_experimental.interpolated_delta(summary countersummary, start timestamptz, intervalparam interval, prev countersummary, next countersummary) RETURNS double precision AS $$\n\
-SELECT interpolated_delta(summary,start,intervalparam,prev,next)\n\
-$$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
+     CREATE FUNCTION toolkit_experimental.interpolated_delta(summary countersummary,\n\
+          start timestamptz,\n\
+          duration interval,\n\
+          prev countersummary,\n\
+          next countersummary) RETURNS DOUBLE PRECISION\n\
+     AS $$\n\
+          SELECT interpolated_delta(summary,start,duration,prev,next) $$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
 ",
     name = "experimental_interpolated_delta", requires=[counter_agg_interpolated_delta]
 );
@@ -633,11 +637,11 @@ $$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
 fn counter_agg_interpolated_delta<'a>(
     summary: CounterSummary<'a>,
     start: crate::raw::TimestampTz,
-    intervalparam: crate::raw::Interval,
+    duration: crate::raw::Interval,
     prev: Option<CounterSummary<'a>>,
     next: Option<CounterSummary<'a>>,
 ) -> f64 {
-    let interval = crate::datum_utils::interval_to_ms(&start, &intervalparam);
+    let interval = crate::datum_utils::interval_to_ms(&start, &duration);
     summary
         .interpolate(start.into(), interval, prev, next)
         .to_internal_counter_summary()
@@ -667,22 +671,27 @@ fn counter_agg_extrapolated_rate<'a>(summary: CounterSummary<'a>, method: &str) 
 // Public facing interpolated_rate
 extension_sql!(
     "\n\
-CREATE FUNCTION toolkit_experimental.interpolated_rate(summary countersummary, start timestamptz, intervalparam interval, prev countersummary, next countersummary) RETURNS double precision AS $$\n\
-SELECT interpolated_rate(summary,start,intervalparam,prev,next)\n\
-$$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
+     CREATE FUNCTION toolkit_experimental.interpolated_rate(summary countersummary,\n\
+          start timestamptz,\n\
+          duration interval,\n\
+          prev countersummary,\n\
+          next countersummary) RETURNS DOUBLE PRECISION\n\
+     AS $$\n\
+          SELECT interpolated_rate(summary,start,duration,prev,next) $$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
 ",
-    name = "experimental_interpolated_rate", requires=[counter_agg_interpolated_rate]
+    name = "experimental_interpolated_rate",
+    requires = [counter_agg_interpolated_rate]
 );
 
 #[pg_extern(name = "interpolated_rate", immutable, parallel_safe)]
 fn counter_agg_interpolated_rate<'a>(
     summary: CounterSummary<'a>,
     start: crate::raw::TimestampTz,
-    intervalparam: crate::raw::Interval,
+    duration: crate::raw::Interval,
     prev: Option<CounterSummary<'a>>,
     next: Option<CounterSummary<'a>>,
 ) -> Option<f64> {
-    let interval = crate::datum_utils::interval_to_ms(&start, &intervalparam);
+    let interval = crate::datum_utils::interval_to_ms(&start, &duration);
     summary
         .interpolate(start.into(), interval, prev, next)
         .to_internal_counter_summary()

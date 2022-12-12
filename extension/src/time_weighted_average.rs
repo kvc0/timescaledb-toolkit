@@ -475,14 +475,14 @@ pub fn time_weighted_average_integral<'a>(
 fn interpolate<'a>(
     tws: Option<TimeWeightSummary>,
     start: crate::raw::TimestampTz,
-    interval: crate::raw::Interval,
+    duration: crate::raw::Interval,
     prev: Option<TimeWeightSummary>,
     next: Option<TimeWeightSummary>,
 ) -> Option<TimeWeightSummary<'a>> {
     match tws {
         None => None,
         Some(tws) => {
-            let interval = crate::datum_utils::interval_to_ms(&start, &interval);
+            let interval = crate::datum_utils::interval_to_ms(&start, &duration);
             Some(tws.interpolate(start.into(), interval, prev, next))
         }
     }
@@ -491,9 +491,13 @@ fn interpolate<'a>(
 // Public facing interpolated_average
 extension_sql!(
     "\n\
-CREATE FUNCTION toolkit_experimental.interpolated_average(tws timeweightsummary, start timestamptz, intervalparam interval, prev  timeweightsummary, next timeweightsummary) RETURNS double precision AS $$\n\
-SELECT interpolated_average(tws,start,intervalparam,prev,next)\n\
-$$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
+     CREATE FUNCTION toolkit_experimental.interpolated_average(tws timeweightsummary,\n\
+          start timestamptz,\n\
+          duration interval,\n\
+          prev timeweightsummary,\n\
+          next timeweightsummary) RETURNS DOUBLE PRECISION\n\
+     AS $$\n\
+          SELECT interpolated_average(tws,start,duration,prev,next) $$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
 ",
     name = "experimental_interpolated_average", requires = [time_weighted_average_interpolated_average]
 );
@@ -502,11 +506,11 @@ $$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;\n\
 pub fn time_weighted_average_interpolated_average<'a>(
     tws: Option<TimeWeightSummary<'a>>,
     start: crate::raw::TimestampTz,
-    intervalparam: crate::raw::Interval,
+    duration: crate::raw::Interval,
     prev: Option<TimeWeightSummary<'a>>,
     next: Option<TimeWeightSummary<'a>>,
 ) -> Option<f64> {
-    let target = interpolate(tws, start, intervalparam, prev, next);
+    let target = interpolate(tws, start, duration, prev, next);
     time_weighted_average_average(target)
 }
 
