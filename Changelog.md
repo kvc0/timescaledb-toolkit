@@ -29,7 +29,7 @@ This changelog should be updated as part of a PR if the work is worth noting (mo
 - [#609](https://github.com/timescale/timescaledb-toolkit/pull/609): New `approx_percentile_array()` function
 
   Users can use the new `toolkit_experimental.approx_percentile_array(percentiles)` to generate an array of percentile results instead of having to call and rebuild the aggregate multiple times.
-  
+
 - [#636](https://github.com/timescale/timescaledb-toolkit/pull/636): New `timeline_agg` aggregate, which is similar to `state_agg` but tracks the entire state timeline instead of just the duration in each state.
 
 - [#640](https://github.com/timescale/timescaledb-toolkit/pull/640): Support `rollup` for `state_agg` and `timeline_agg`.
@@ -37,10 +37,14 @@ This changelog should be updated as part of a PR if the work is worth noting (mo
 
 - [#638](https://github.com/timescale/timescaledb-toolkit/pull/638): Introducing Time Vector Templates.
 
+Users can use the new experimental function `toolkit_experimental.to_text(timevector(time, value),format_string)` to render a formatted text representation of their time vector series. These changes also include `toolkit_experimental.to_plotly(timevector(time, value))`, which will render your time vector series in a format suitable for use with plotly.
+
 #### Bug fixes
 - [#644](https://github.com/timescale/timescaledb-toolkit/pull/644): Fix bug in Candlestick aggregate and reenable partial aggregation.
 
 #### Other notable changes
+- [#646](https://github.com/timescale/timescaledb-toolkit/pull/646): Added experimental support for PostgreSQL 15.
+- [#621](https://github.com/timescale/timescaledb-toolkit/pull/621): Rocky Linux 9 support
 
 #### Shout-outs
 
